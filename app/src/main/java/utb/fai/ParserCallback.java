@@ -1,6 +1,7 @@
 package utb.fai;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -49,6 +50,8 @@ class ParserCallback extends HTMLEditorKit.ParserCallback {
     /** pokud debugLevel>1, budeme vypisovat debugovací hlášky na std. error */
     int debugLevel = 0;
 
+    HashMap<String, Integer> wordCounts = new HashMap<String, Integer>();
+
     ParserCallback(HashSet<URI> visitedURIs, LinkedList<URIinfo> foundURIs) {
         this.foundURIs = foundURIs;
         this.visitedURIs = visitedURIs;
@@ -66,7 +69,7 @@ class ParserCallback extends HTMLEditorKit.ParserCallback {
         String href = null;
         if (debugLevel > 1)
             System.err.println("handleStartTag: " + t.toString() + ", pos=" + pos + ", attribs=" + a.toString());
-        if (depth <= maxDepth)
+        if (depth < maxDepth)
             if (t == HTML.Tag.A)
                 href = (String) a.getAttribute(HTML.Attribute.HREF);
             else if (t == HTML.Tag.FRAME)
@@ -100,9 +103,17 @@ class ParserCallback extends HTMLEditorKit.ParserCallback {
      * HTML stránkách.
      *******************************************************************/
     public void handleText(char[] data, int pos) {
-        System.out.println("handleText: " + String.valueOf(data) + ", pos=" + pos);
+        if (debugLevel > 1)
+            System.err.println("handleText: " + String.valueOf(data) + ", pos=" + pos);
         /**
          * ...tady bude vaše implementace...
          */
+        String text = String.valueOf(data);
+        if (text.contains("{"))
+            return;
+        for (String word : text.toLowerCase().split("[^\\p{L}]+")) {
+            if (!word.isEmpty())
+                wordCounts.merge(word, 1, Integer::sum);
+        }
     }
 }

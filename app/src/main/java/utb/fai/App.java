@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 
 import javax.swing.text.html.parser.ParserDelegator;
 
@@ -30,8 +31,12 @@ public class App {
 			/**
 			 * Zde zpracujte dalí parametry - maxDepth a debugLevel
 			 */
+			int maxDepth = args.length > 1 ? Integer.parseInt(args[1]) : 2;
+			int debugLevel = args.length > 2 ? Integer.parseInt(args[2]) : 0;
 
 			ParserCallback callBack = new ParserCallback(visitedURIs, foundURIs);
+			callBack.maxDepth = maxDepth;
+			callBack.debugLevel = debugLevel;
 			ParserDelegator parser = new ParserDelegator();
 
 			while (!foundURIs.isEmpty()) {
@@ -47,6 +52,11 @@ public class App {
 					System.err.println("Error loading page - does it exist?");
 				}
 			}
+
+			callBack.wordCounts.entrySet().stream()
+					.sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+					.limit(20)
+					.forEach(e -> System.out.println(e.getKey() + ";" + e.getValue()));
 		} catch (Exception e) {
 			System.err.println("Zachycena neoetøená výjimka, konèíme...");
 			e.printStackTrace();
